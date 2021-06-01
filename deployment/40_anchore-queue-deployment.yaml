@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: anchore-api
+  name: anchore-queue
   namespace: "${NAMESPACE_NAME}"
   annotations:
     kompose.cmd: /snap/kompose/19/kompose-linux-amd64 --file docker-compose.yaml convert
     kompose.version: 1.21.0 (992df58d8)
   labels:
-    io.kompose.service: anchore-api
+    io.kompose.service: anchore-queue
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: anchore-api
+      io.kompose.service: anchore-queue
   template:
     metadata:
       annotations:
@@ -20,24 +20,23 @@ spec:
           convert
         kompose.version: 1.21.0 (992df58d8)
       labels:
-        io.kompose.service: anchore-api
+        io.kompose.service: anchore-queue
     spec:
       containers:
-      - name: anchore-api
+      - name: anchore-queue
         image: ${ANCHORE_IMAGE}:${ANCHORE_VERSION}
         args:
         - anchore-manager
         - service
         - start
-        - apiext
+        - simplequeue
         env:
-        - name: ANCHORE_ADMIN_PASSWORD
-          value: ${ANCHORE_ADMIN_PASSWORD}
-        - name: ANCHORE_DB_HOST
-          value: anchore-db
-        - name: ANCHORE_DB_PASSWORD
-          value: ${ANCHORE_DB_PASSWORD}
         - name: ANCHORE_ENDPOINT_HOSTNAME
-          value: anchore-api
+          value: anchore-queue
+        envFrom:
+        - configMapRef:
+            name: anchore
+        - secretRef:
+            name: anchore
         ports:
         - containerPort: 8228
