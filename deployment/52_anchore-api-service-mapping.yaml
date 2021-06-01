@@ -5,4 +5,4 @@ metadata:
   namespace: "${NAMESPACE_NAME}"
 spec:
   prefix: /anchore/
-  service: "${SERVICE_NAME}:8228"
+  service: anchore-api:8228
