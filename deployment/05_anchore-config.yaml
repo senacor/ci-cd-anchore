@@ -3,6 +3,6 @@ kind: ConfigMap
 metadata:
   name: anchore
   namespace: "${NAMESPACE_NAME}"
-stringData:
+data:
   ANCHORE_DB_HOST: anchore-db
   ANCHORE_DB_PORT: "5432"
