@@ -1,18 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: anchore-policy-engine
+  name: anchore-analyzer
   namespace: "${NAMESPACE_NAME}"
   annotations:
     kompose.cmd: /snap/kompose/19/kompose-linux-amd64 --file docker-compose.yaml convert
     kompose.version: 1.21.0 (992df58d8)
   labels:
-    io.kompose.service: anchore-policy-engine
+    io.kompose.service: anchore-analyzer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: anchore-policy-engine
+      io.kompose.service: anchore-analyzer
+  strategy:
+    type: Recreate
   template:
     metadata:
       annotations:
@@ -20,24 +22,29 @@ spec:
           convert
         kompose.version: 1.21.0 (992df58d8)
       labels:
-        io.kompose.service: anchore-policy-engine
+        io.kompose.service: anchore-analyzer
     spec:
       containers:
-      - name: anchore-policy-engine
+      - name: anchore-analyzer
         image: ${ANCHORE_IMAGE}:${ANCHORE_VERSION}
         args:
         - anchore-manager
         - service
         - start
-        - policy_engine
+        - analyzer
         env:
-        - name: ANCHORE_ADMIN_PASSWORD
-          value: ${ANCHORE_ADMIN_PASSWORD}
-        - name: ANCHORE_DB_HOST
-          value: anchore-db
-        - name: ANCHORE_DB_PASSWORD
-          value: ${ANCHORE_DB_PASSWORD}
         - name: ANCHORE_ENDPOINT_HOSTNAME
-          value: anchore-policy-engine
+          value: anchore-analyzer
+        envFrom:
+        - configMapRef:
+            name: anchore
+        - secretRef:
+            name: anchore
         ports:
         - containerPort: 8228
+        volumeMounts:
+        - mountPath: /analysis_scratch
+          name: anchore-analyzer-volume
+      volumes:
+      - name: anchore-analyzer-volume
+        emptyDir: {}
