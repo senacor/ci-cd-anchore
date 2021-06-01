@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 --file docker-compose.yaml convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: anchore-catalog
+  name: anchore-catalog
+  namespace: "${NAMESPACE_NAME}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: anchore-catalog
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: /snap/kompose/19/kompose-linux-amd64 --file docker-compose.yaml
+          convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: anchore-catalog
+    spec:
+      containers:
+      - args:
+        - anchore-manager
+        - service
+        - start
+        - catalog
+        env:
+        - name: ANCHORE_ADMIN_PASSWORD
+          value: ${ANCHORE_ADMIN_PASSWORD}
+        - name: ANCHORE_DB_HOST
+          value: anchore-db
+        - name: ANCHORE_DB_PASSWORD
+          value: ${ANCHORE_DB_PASSWORD}
+        - name: ANCHORE_ENDPOINT_HOSTNAME
+          value: anchore-catalog
+        image: ${ANCHORE_IMAGE}:${ANCHORE_VERSION}
+        imagePullPolicy: ""
+        name: anchore-catalog
+        ports:
+        - containerPort: 8228
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
