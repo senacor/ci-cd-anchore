@@ -1,14 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: anchore-db
+  namespace: "${NAMESPACE_NAME}"
   annotations:
     kompose.cmd: /snap/kompose/19/kompose-linux-amd64 --file docker-compose.yaml convert
     kompose.version: 1.21.0 (992df58d8)
-  creationTimestamp: null
   labels:
     io.kompose.service: anchore-db
-  name: anchore-db
-  namespace: "${NAMESPACE_NAME}"
 spec:
   replicas: 1
   selector:
@@ -22,26 +21,20 @@ spec:
         kompose.cmd: /snap/kompose/19/kompose-linux-amd64 --file docker-compose.yaml
           convert
         kompose.version: 1.21.0 (992df58d8)
-      creationTimestamp: null
       labels:
         io.kompose.service: anchore-db
     spec:
       containers:
-      - env:
+      - name: anchore-db
+        image: postgres:9
+        env:
         - name: POSTGRES_PASSWORD
           value: ${ANCHORE_DB_PASSWORD}
-        image: postgres:9
-        imagePullPolicy: ""
-        name: anchore-db
         ports:
         - containerPort: 5432
-        resources: {}
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: anchore-db-volume
-      restartPolicy: Always
-      serviceAccountName: ""
       volumes:
       - name: anchore-db-volume
         emptyDir: {}
-status: {}

@@ -1,32 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: anchore-policy-engine
+  namespace: "${NAMESPACE_NAME}"
   annotations:
     kompose.cmd: /snap/kompose/19/kompose-linux-amd64 --file docker-compose.yaml convert
     kompose.version: 1.21.0 (992df58d8)
-  creationTimestamp: null
   labels:
     io.kompose.service: anchore-policy-engine
-  name: anchore-policy-engine
-  namespace: "${NAMESPACE_NAME}"
 spec:
   replicas: 1
   selector:
     matchLabels:
       io.kompose.service: anchore-policy-engine
-  strategy: {}
   template:
     metadata:
       annotations:
         kompose.cmd: /snap/kompose/19/kompose-linux-amd64 --file docker-compose.yaml
           convert
         kompose.version: 1.21.0 (992df58d8)
-      creationTimestamp: null
       labels:
         io.kompose.service: anchore-policy-engine
     spec:
       containers:
-      - args:
+      - name: anchore-policy-engine
+        image: ${ANCHORE_IMAGE}:${ANCHORE_VERSION}
+        args:
         - anchore-manager
         - service
         - start
@@ -40,13 +39,5 @@ spec:
           value: ${ANCHORE_DB_PASSWORD}
         - name: ANCHORE_ENDPOINT_HOSTNAME
           value: anchore-policy-engine
-        image: ${ANCHORE_IMAGE}:${ANCHORE_VERSION}
-        imagePullPolicy: ""
-        name: anchore-policy-engine
         ports:
         - containerPort: 8228
-        resources: {}
-      restartPolicy: Always
-      serviceAccountName: ""
-      volumes: null
-status: {}

@@ -1,8 +1,8 @@
 apiVersion: getambassador.io/v2
 kind: Mapping
 metadata:
-  name:  "${SERVICE_NAME}"
-  namespace: "${SERVICE_NAME}"
+  name: anchore-api
+  namespace: "${NAMESPACE_NAME}"
 spec:
   prefix: /anchore/
   service: "${SERVICE_NAME}:8228"

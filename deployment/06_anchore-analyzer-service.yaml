@@ -1,20 +1,18 @@
 apiVersion: v1
 kind: Service
 metadata:
+  name: anchore-analyzer
+  namespace: "${NAMESPACE_NAME}"
   annotations:
     kompose.cmd: /snap/kompose/19/kompose-linux-amd64 --file docker-compose.yaml convert
     kompose.version: 1.21.0 (992df58d8)
-  creationTimestamp: null
   labels:
     io.kompose.service: anchore-analyzer
-  name: anchore-analyzer
-  namespace: "${NAMESPACE_NAME}"
 spec:
+  type: ClusterIP
   ports:
   - name: "8228"
     port: 8228
     targetPort: 8228
   selector:
     io.kompose.service: anchore-analyzer
-status:
-  loadBalancer: {}
