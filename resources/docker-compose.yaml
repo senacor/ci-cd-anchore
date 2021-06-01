@@ -1,0 +1,112 @@
+# This is a docker-compose file for development purposes. It refereneces unstable developer builds from the HEAD of master branch in https://github.com/anchore/anchore-engine
+# For a compose file intended for use with a released version, see https://engine.anchore.io/docs/quickstart/
+#
+---
+version: '2.1'
+volumes:
+  anchore-db-volume:
+    # Set this to 'true' to use an external volume. In which case, it must be created manually with "docker volume create anchore-db-volume"
+    external: false
+
+services:
+  # The primary API endpoint service
+  anchore-api:
+    image: anchore/anchore-engine:v0.9.4
+    depends_on:
+      - anchore-db
+      - anchore-catalog
+    ports:
+      - "8228:8228"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100m
+    environment:
+      - ANCHORE_ENDPOINT_HOSTNAME=anchore-api
+      - ANCHORE_ADMIN_PASSWORD=foobar
+      - ANCHORE_DB_HOST=anchore-db
+      - ANCHORE_DB_PASSWORD=mysecretpassword
+    command: ["anchore-manager", "service", "start", "apiext"]
+
+  # Catalog is the primary persistence and state manager of the system
+  anchore-catalog:
+    image: anchore/anchore-engine:v0.9.4
+    depends_on:
+      - anchore-db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100m
+    expose:
+      - 8228
+    environment:
+      - ANCHORE_ENDPOINT_HOSTNAME=anchore-catalog
+      - ANCHORE_ADMIN_PASSWORD=foobar
+      - ANCHORE_DB_HOST=anchore-db
+      - ANCHORE_DB_PASSWORD=mysecretpassword
+    command: ["anchore-manager", "service", "start", "catalog"]
+  anchore-queue:
+    image: anchore/anchore-engine:v0.9.4
+    depends_on:
+      - anchore-db
+      - anchore-catalog
+    expose:
+      - 8228
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100m
+    environment:
+      - ANCHORE_ENDPOINT_HOSTNAME=anchore-queue
+      - ANCHORE_ADMIN_PASSWORD=foobar
+      - ANCHORE_DB_HOST=anchore-db
+      - ANCHORE_DB_PASSWORD=mysecretpassword
+    command: ["anchore-manager", "service", "start", "simplequeue"]
+  anchore-policy-engine:
+    image: anchore/anchore-engine:v0.9.4
+    depends_on:
+      - anchore-db
+      - anchore-catalog
+    expose:
+      - 8228
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100m
+    environment:
+      - ANCHORE_ENDPOINT_HOSTNAME=anchore-policy-engine
+      - ANCHORE_ADMIN_PASSWORD=foobar
+      - ANCHORE_DB_HOST=anchore-db
+      - ANCHORE_DB_PASSWORD=mysecretpassword
+    command: ["anchore-manager", "service", "start", "policy_engine"]
+  anchore-analyzer:
+    image: anchore/anchore-engine:v0.9.4
+    depends_on:
+      - anchore-db
+      - anchore-catalog
+    expose:
+      - 8228
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100m
+    environment:
+      - ANCHORE_ENDPOINT_HOSTNAME=anchore-analyzer
+      - ANCHORE_ADMIN_PASSWORD=foobar
+      - ANCHORE_DB_HOST=anchore-db
+      - ANCHORE_DB_PASSWORD=mysecretpassword
+    volumes:
+      - /analysis_scratch
+    command: ["anchore-manager", "service", "start", "analyzer"]
+  anchore-db:
+    image: "postgres:9"
+    volumes:
+      - anchore-db-volume:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=mysecretpassword
+    expose:
+      - 5432
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100m
